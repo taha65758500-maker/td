@@ -1,0 +1,36 @@
+
+name: Build TDLib Android JSONJava
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout TDLib
+        uses: actions/checkout@v4
+
+      - name: Build Android JSONJava library
+        run: |
+          docker build \
+            --build-arg TDLIB_INTERFACE=JSONJava \
+            --output type=local,dest=./tdlib-output \
+            -f example/android/Dockerfile \
+            example/android
+
+      - name: Check generated archive
+        run: |
+          find tdlib-output -type f
+          test -f tdlib-output/tdlib.zip
+
+      - name: Upload TDLib archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdlib-android-jsonjava
+          path: tdlib-output/tdlib.zip
+          if-no-files-found: error
+          retention-days: 7
+          
